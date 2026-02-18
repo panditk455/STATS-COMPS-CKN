@@ -1,7 +1,60 @@
 ---
-title: "Initial results"
-format: html
+title: "Poposal Defense"
+author: "Cici, Kritika, Nicholas"
+format: revealjs
 ---
+
+## Estimating error rate using Nonparametric bootstrap 
+
+::: panel-tabset
+
+## Setting
+- Take every rows from dataset to bootstrap
+- Mated <-> ID & LeanID
+- NonMated <-> Excl & LeanExcl
+
+## Results
+|  CI    |         error rate|
+|:-----|---------:|
+|2.5%  | 0.0883195|
+|97.5% | 0.1173060|
+
+
+
+:::
+
+## Estimating error rate using Cluster bootstrap 
+
+::: panel-tabset
+## Setting
+- Take each examiner (n = 49; anonID) as bootstrap samples
+- - Mated == ID & LeanID
+- NonMated == Excl & LeanExcl
+
+## Result
+|   CI   |  error rate|
+|:-----|---------:|
+|2.5%  | 0.0704185|
+|97.5% | 0.1387613|
+
+:::
+
+## Estimating error rate using Cluster bootstrap 
+
+::: panel-tabset
+## Setting
+- Take each Cset (n = 1240; Cset ID) as bootstrap samples
+- - Mated == ID & LeanID
+- NonMated == Excl & LeanExcl
+
+## Result
+|  CI    |         error rate|
+|:-----|---------:|
+|2.5%  | 0.0873356|
+|97.5% | 0.1190107|
+
+:::
+
 By Cset: > summary_table_diff
 
              Metric          Mean           SD        CI_2.5       CI_97.5
