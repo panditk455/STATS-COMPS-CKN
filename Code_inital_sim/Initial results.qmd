@@ -1,0 +1,84 @@
+---
+title: "Poposal Defense"
+author: "Cici, Kritika, Nicholas"
+format: revealjs
+---
+
+## Estimating error rate using Nonparametric bootstrap 
+
+::: panel-tabset
+
+## Setting
+- Take every rows from dataset to bootstrap
+- Mated <-> ID & LeanID
+- NonMated <-> Excl & LeanExcl
+
+## Results
+|  CI    |         error rate|
+|:-----|---------:|
+|2.5%  | 0.0883195|
+|97.5% | 0.1173060|
+
+
+
+:::
+
+## Estimating error rate using Cluster bootstrap 
+
+::: panel-tabset
+## Setting
+- Take each examiner (n = 49; anonID) as bootstrap samples
+- - Mated == ID & LeanID
+- NonMated == Excl & LeanExcl
+
+## Result
+|   CI   |  error rate|
+|:-----|---------:|
+|2.5%  | 0.0704185|
+|97.5% | 0.1387613|
+
+:::
+
+## Estimating error rate using Cluster bootstrap 
+
+::: panel-tabset
+## Setting
+- Take each Cset (n = 1240; Cset ID) as bootstrap samples
+- - Mated == ID & LeanID
+- NonMated == Excl & LeanExcl
+
+## Result
+|  CI    |         error rate|
+|:-----|---------:|
+|2.5%  | 0.0873356|
+|97.5% | 0.1190107|
+
+:::
+
+## Estimating Hawthrone effect
+::: panel-tabset
+# Methodology
+- bootstrap by Cset
+- how do we add the potnetial effect?
+    
+# Results   
+By Cset: > summary_table_diff
+
+|Metric            |         Mean|         SD|       CI_2.5|      CI_97.5|
+|:-----------------|------------:|----------:|------------:|------------:|
+|inconclusive_rate |    0.1136237|  0.0061163|    0.1013118|    0.1253951|
+|def_error_rate    |   -0.0604750|  0.0057678|   -0.0718092|   -0.0494078|
+|err_given_id      |   -0.1015783|  0.0093017|   -0.1202233|   -0.0840163|
+|err_given_excl    |   -0.0249231|  0.0056812|   -0.0366894|   -0.0141088|
+
+:::
+
+## By examiners
+
+|Metric            |         Mean|         SD|       CI_2.5|      CI_97.5|
+|:-----------------|------------:|----------:|------------:|------------:|
+|inconclusive_rate |    0.1140540|  0.0093783|    0.0959680|    0.1323400|
+|def_error_rate    |   -0.0612914|  0.0090705|   -0.0806726|   -0.0449213|
+|err_given_id      |   -0.1031371|  0.0151540|   -0.1359356|   -0.0753734|
+|err_given_excl    |   -0.0251255|  0.0061550|   -0.0379058|   -0.0141394|
+

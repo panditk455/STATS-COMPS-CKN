@@ -1,0 +1,241 @@
+---
+title: "Bootstrap by Cset - The cases bootstrap"
+output: html_document
+---
+
+---
+title: "Bootstrap on evidence quality"
+output: html_document
+---
+
+```{r}
+library(readxl)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(scales)
+```
+
+Importing the Data
+
+```{r}
+file_path <- "data/bullets_2024.xlsx"
+
+kq_data <- read_excel(file_path, sheet = "KQ responses (n=1575)")
+qq_data <- read_excel(file_path, sheet = "QQ responses (n=1581)")
+cset_data <- read_excel(file_path, sheet = "Cset (n=1240)")
+```
+
+Data Cleaning
+
+```{r}
+phase_label <- "Primary (Baseline)"
+
+kq <- kq_data %>%
+  filter(Phase == phase_label) %>%
+  mutate(
+    Decision = if_else(K01_Q1value == "NoValue", "NoValue", K08_Conclusion),
+    Comparison = "KQ"
+  ) %>%
+  select(AnonID, Cset, Mating, Decision, Comparison)
+
+qq <- qq_data %>%
+  filter(Phase == phase_label) %>%
+  mutate(
+    Decision = if_else(Q01_Q1value == "NoValue" | Q02_Q2value == "NoValue", "NoValue", Q08_Conclusion),
+    Comparison = "QQ"
+  ) %>%
+  select(AnonID, Cset, Mating, Decision, Comparison)
+
+cset <- cset_data %>%select( Cset, Type,`Cset Category (Detailed)`, `Cset Quality (voted)` ) %>%
+  rename(Category = `Cset Category (Detailed)`, CsetQuality = `Cset Quality (voted)` )
+
+responses <- bind_rows(kq, qq) %>%
+  left_join(cset, by = "Cset") %>%
+  mutate(Category = str_squish(Category), Decision = factor(Decision, levels = c("ID", "LeanID", "Insuff", "NoValue", "LeanExcl", "Excl")))
+```
+
+
+```{r}
+library(lmeresampler)
+
+set.seed(121456)
+
+B <- 2000  # number of bootstrap replicates
+
+# unique examiners
+Cset <- unique(responses$Cset)
+
+# pre-split row indices by examiner (fast & memory efficient)
+idx_by_Cset <- split(seq_len(nrow(responses)), responses$Cset)
+
+# store bootstrap indices
+boot_idx_Cset<- vector("list", B)
+
+for (b in 1:B) {
+  # sample examiners with replacement
+  sampled_Cset <- sample(Cset, length(Cset), replace = TRUE)
+  
+  # collect all rows belonging to sampled examiners
+  boot_idx_Cset[[b]] <- unlist(idx_by_Cset[sampled_Cset], use.names = FALSE)
+}
+
+# save to disk
+saveRDS(boot_idx_Cset, "boot_idx_Cset.rds")
+
+boot_idx_Cset <- readRDS("boot_idx_Cset.rds")
+
+results <- vector("list", length(boot_idx_Cset))
+```
+Helper: Applying hawthorne effect
+```{r}
+apply_hawthorne_global <- function(dat, rr = 1.435) {
+  dat2 <- dat
+
+  pD <- mean(dat2$Decision == "Insuff", na.rm = TRUE)
+  if (is.na(pD) || pD <= 0) return(dat2)
+
+  pU_target <- pD / rr
+  pU_target <- max(0, min(1, pU_target))
+
+  g <- (pD - pU_target) / pD
+  g <- max(0, min(1, g))
+
+  inc_idx <- which(dat2$Decision == "Insuff")
+  if (length(inc_idx) == 0 || g <= 0) return(dat2)
+
+  flip <- rbinom(length(inc_idx), 1, g) == 1
+  flip_idx <- inc_idx[flip]
+  if (length(flip_idx) == 0) return(dat2)
+
+  # redistribute to definitive decisions based on replicate's definitive mix
+  def <- dat2$Decision[dat2$Decision %in% c("ID","LeanID","Excl","LeanExcl")]
+  if (length(def) == 0) return(dat2)
+
+  probs <- table(def)
+  probs <- as.numeric(probs) / sum(probs)
+  names(probs) <- names(table(def))
+
+  dat2$Decision[flip_idx] <- sample(names(probs), length(flip_idx),
+                                    replace = TRUE, prob = probs)
+  dat2
+}
+
+```
+Helper: Compute metrics for each bootstrap
+```{r}
+compute_metrics <- function(dat) {
+  inc <- mean(dat$Decision == "Insuff", na.rm = TRUE)
+
+  definitive <- dat$Decision %in% c("ID","LeanID","Excl","LeanExcl")
+  dat_def <- dat[definitive, , drop = FALSE]
+
+  # Overall definitive error rate:
+  # false ID = ID/LeanID on Nonmated
+  # false Excl = Excl/LeanExcl on Mated
+  err_def <- if (nrow(dat_def) > 0) {
+    mean(
+      (dat_def$Mating == "Nonmated" & dat_def$Decision %in% c("ID","LeanID")) |
+      (dat_def$Mating == "Mated"    & dat_def$Decision %in% c("Excl","LeanExcl")),
+      na.rm = TRUE
+    )
+  } else NA_real_
+
+  # Decision-specific conditional error rates
+  id_calls <- dat$Decision %in% c("ID","LeanID")
+  err_given_id <- if (sum(id_calls, na.rm = TRUE) > 0) {
+    mean(dat$Mating[id_calls] == "Nonmated", na.rm = TRUE)
+  } else NA_real_
+
+  excl_calls <- dat$Decision %in% c("Excl","LeanExcl")
+  err_given_excl <- if (sum(excl_calls, na.rm = TRUE) > 0) {
+    mean(dat$Mating[excl_calls] == "Mated", na.rm = TRUE)
+  } else NA_real_
+
+  c(
+    inconclusive_rate = inc,
+    def_error_rate    = err_def,
+    err_given_id      = err_given_id,
+    err_given_excl    = err_given_excl,
+    n = nrow(dat),
+    n_def = nrow(dat_def)
+  )
+}
+
+```
+
+
+```{r}
+out <- vector("list", length(boot_idx_Cset))
+
+for (b in seq_along(boot_idx_Cset)) {
+  
+  # Step 1: get bootstrap dataset
+
+  # Step 2 (LATER): apply Hawthorne effect
+  # boot_dat <- apply_hawthorne(boot_dat)
+    boot_dat <- responses[boot_idx_Cset[[b]], ]
+
+  # discovered metrics (optional)
+  # mD <- compute_metrics(boot_dat)
+
+  # simulated undiscovered
+  undat <- apply_hawthorne_global(boot_dat)
+
+  # save the whole simulated dataset if you want:
+out[[b]] <- list(
+  discovered = boot_dat,
+  undiscovered = undat
+)
+  # Step 3 (LATER): compute metrics
+  # results[[b]] <- compute_metrics(boot_dat)
+  
+}
+```
+
+```{r}
+metrics_discovered <- lapply(out, function(x) compute_metrics(x$discovered))
+metrics_undiscovered <- lapply(out, function(x) compute_metrics(x$undiscovered))
+metrics_D <- as.data.frame(do.call(rbind, metrics_discovered))
+metrics_U <- as.data.frame(do.call(rbind, metrics_undiscovered))
+
+summary_table_D <- data.frame(
+  Metric = names(metrics_D),
+  Mean = sapply(metrics_D, mean, na.rm = TRUE),
+  SD = sapply(metrics_D, sd, na.rm = TRUE),
+  CI_2.5 = sapply(metrics_D, quantile, probs = 0.025, na.rm = TRUE),
+  CI_97.5 = sapply(metrics_D, quantile, probs = 0.975, na.rm = TRUE),
+  row.names = NULL
+)
+
+summary_table_U <- data.frame(
+  Metric = names(metrics_U),
+  Mean = sapply(metrics_U, mean, na.rm = TRUE),
+  SD = sapply(metrics_U, sd, na.rm = TRUE),
+  CI_2.5 = sapply(metrics_U, quantile, probs = 0.025, na.rm = TRUE),
+  CI_97.5 = sapply(metrics_U, quantile, probs = 0.975, na.rm = TRUE),
+  row.names = NULL
+)
+
+metrics_diff <- metrics_D - metrics_U
+
+summary_table_diff <- data.frame(
+  Metric = names(metrics_diff),
+  Mean = sapply(metrics_diff, mean, na.rm = TRUE),
+  SD = sapply(metrics_diff, sd, na.rm = TRUE),
+  CI_2.5 = sapply(metrics_diff, quantile, probs = 0.025, na.rm = TRUE),
+  CI_97.5 = sapply(metrics_diff, quantile, probs = 0.975, na.rm = TRUE),
+  row.names = NULL
+)
+summary_table_diff
+knitr::kable(summary_table_diff)
+```
+
+```{r}
+plot(density(metrics_diff$inconclusive_rate),
+     main = "Density of Hawthorne Effect (Bootstrap)",
+     xlab = "Difference in Inconclusive Rate")
+abline(v = mean(metrics_df$diff_inconclusive, na.rm = TRUE), col = "red", lwd = 2)
+
+```
+
