@@ -48,14 +48,11 @@ boot_cluster <- function(df, cluster_var = "AnonID", B = 2000, seed = 123) {
 }
 
 vals2 <- boot_cluster(responses, cluster_var = "AnonID", B = 2000)
-quantile(vals2, c(.025, .975), na.rm = TRUE) -> result
-
-knitr::kable(result)
+quantile(vals2, c(.025, .975), na.rm = TRUE) 
 ```
 
 ```{r}
 vals3 <- boot_cluster(responses, cluster_var = "Cset", B = 2000)
 quantile(vals3, c(.025, .975), na.rm = TRUE)
-
 ```
 

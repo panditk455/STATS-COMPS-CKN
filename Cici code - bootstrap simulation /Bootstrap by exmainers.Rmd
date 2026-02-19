@@ -223,6 +223,7 @@ summary_table_diff <- data.frame(
   row.names = NULL
 )
 summary_table_diff
+
 ```
 
 ```{r}

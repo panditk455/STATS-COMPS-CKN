@@ -228,6 +228,7 @@ summary_table_diff <- data.frame(
   row.names = NULL
 )
 summary_table_diff
+knitr::kable(summary_table_diff)
 ```
 
 ```{r}

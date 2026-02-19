@@ -246,12 +246,122 @@ Cici, Kritika, Nicholas
 </div>
 </div>
 </div>
+</section>
+<section id="estimating-hawthrone-effect" class="slide level2">
+<h2>Estimating Hawthrone effect</h2>
+<div class="panel-tabset">
+<ul id="tabset-4" class="panel-tabset-tabby"><li><a data-tabby-default="" href="#tabset-4-1">Methodology</a></li><li><a href="#tabset-4-2">Results</a></li></ul>
+<div class="tab-content">
+<div id="tabset-4-1">
+<ul>
+<li>bootstrap by Cset</li>
+<li>how do we add the potnetial effect?</li>
+</ul>
+</div>
+<div id="tabset-4-2">
 <p>By Cset: &gt; summary_table_diff</p>
-<pre><code>         Metric          Mean           SD        CI_2.5       CI_97.5</code></pre>
-<p>1 inconclusive_rate 0.11362370 0.006116305 0.10131180 0.12539508 2 def_error_rate -0.06047501 0.005767791 -0.07180924 -0.04940781 3 err_given_id -0.10157826 0.009301742 -0.12022327 -0.08401630 4 err_given_excl -0.02492305 0.005681164 -0.03668944 -0.01410883 5 n 0.00000000 0.000000000 0.00000000 0.00000000 6 n_def -327.77500000 17.961700542 -363.00000000 -292.00000000</p>
-<p>By examiners: &gt; summary_table_diff</p>
-<pre><code>         Metric          Mean           SD        CI_2.5       CI_97.5</code></pre>
-<p>1 inconclusive_rate 0.11405400 0.009378315 0.09596798 0.13233996 2 def_error_rate -0.06129137 0.009070528 -0.08067262 -0.04492131 3 err_given_id -0.10313710 0.015153999 -0.13593555 -0.07537341 4 err_given_excl -0.02512550 0.006155030 -0.03790582 -0.01413936 5 n 0.00000000 0.000000000 0.00000000 0.00000000 6 n_def -329.42350000 34.674865838 -398.00000000 -262.00000000</p>
+<table class="caption-top">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">SD</th>
+<th style="text-align: right;">CI_2.5</th>
+<th style="text-align: right;">CI_97.5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">inconclusive_rate</td>
+<td style="text-align: right;">0.1136237</td>
+<td style="text-align: right;">0.0061163</td>
+<td style="text-align: right;">0.1013118</td>
+<td style="text-align: right;">0.1253951</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">def_error_rate</td>
+<td style="text-align: right;">-0.0604750</td>
+<td style="text-align: right;">0.0057678</td>
+<td style="text-align: right;">-0.0718092</td>
+<td style="text-align: right;">-0.0494078</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">err_given_id</td>
+<td style="text-align: right;">-0.1015783</td>
+<td style="text-align: right;">0.0093017</td>
+<td style="text-align: right;">-0.1202233</td>
+<td style="text-align: right;">-0.0840163</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">err_given_excl</td>
+<td style="text-align: right;">-0.0249231</td>
+<td style="text-align: right;">0.0056812</td>
+<td style="text-align: right;">-0.0366894</td>
+<td style="text-align: right;">-0.0141088</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="by-examiners" class="slide level2">
+<h2>By examiners</h2>
+<table class="caption-top">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">SD</th>
+<th style="text-align: right;">CI_2.5</th>
+<th style="text-align: right;">CI_97.5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">inconclusive_rate</td>
+<td style="text-align: right;">0.1140540</td>
+<td style="text-align: right;">0.0093783</td>
+<td style="text-align: right;">0.0959680</td>
+<td style="text-align: right;">0.1323400</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">def_error_rate</td>
+<td style="text-align: right;">-0.0612914</td>
+<td style="text-align: right;">0.0090705</td>
+<td style="text-align: right;">-0.0806726</td>
+<td style="text-align: right;">-0.0449213</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">err_given_id</td>
+<td style="text-align: right;">-0.1031371</td>
+<td style="text-align: right;">0.0151540</td>
+<td style="text-align: right;">-0.1359356</td>
+<td style="text-align: right;">-0.0753734</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">err_given_excl</td>
+<td style="text-align: right;">-0.0251255</td>
+<td style="text-align: right;">0.0061550</td>
+<td style="text-align: right;">-0.0379058</td>
+<td style="text-align: right;">-0.0141394</td>
+</tr>
+</tbody>
+</table>
 
 </section>
     </div>
